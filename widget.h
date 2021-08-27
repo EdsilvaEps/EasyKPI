@@ -5,6 +5,8 @@
 #include <adbmanager.h>
 #include <testmanager.h>
 #include <QObject>
+#include <QFileDialog>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
@@ -35,6 +37,8 @@ private slots:
 
     void on_device_found(QString device);
 
+    void on_browseFilesBtn_clicked();
+
 private:
     Ui::Widget *ui;
     AdbManager *adb;
@@ -43,6 +47,8 @@ private:
     int countdownAcc;
 
     void countdown();
+
+    void printOnScreen(QString text);
 
 };
 #endif // WIDGET_H

@@ -57,14 +57,14 @@ public:
 
     QString getDeviceByIndex(int index);
 
-    string getLogResult();
-
 
 signals:
     void foundDevice(QString device);
 
 public slots:
     void clickShutterBtn();
+
+    void getLogResult();
 
 };
 

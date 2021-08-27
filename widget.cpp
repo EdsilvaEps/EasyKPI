@@ -12,8 +12,6 @@ Widget::Widget(QWidget *parent)
     ui->terminalOutput->setReadOnly(true);
     this->setWindowTitle("KPI Helper");
     this->timer = new QTimer(this);
-    //ui->startTestBtn->setEnabled(false);
-    //system("~/Android/Sdk/platform-tools/adb devices");
 
     adb = new AdbManager("~/Android/Sdk/platform-tools/adb");
     testMan = new TestManager(0,0,4000,adb);
@@ -29,7 +27,7 @@ Widget::Widget(QWidget *parent)
     adb->getConnectedDevices();
     //ui->terminalOutput->append(deviceLog);
 
-    ui->startTestBtn->setEnabled(false);
+    //ui->startTestBtn->setEnabled(false);
 
 
 
@@ -81,8 +79,8 @@ void Widget::on_stopTestBtn_clicked()
 void Widget::on_test_finished(int test)
 {
     qDebug() << "test finished: ";
-    ui->terminalOutput->append("test " + QString::number(test) + " finished.");
-
+    this->printOnScreen("test " + QString::number(test) + " finished.");
+    adb->getLogResult();
 
 
 }
@@ -103,7 +101,7 @@ void Widget::on_test_step(int tests, int samples)
 void Widget::countdown()
 {
 
-    ui->terminalOutput->append("test starts in " + QString::number(this->countdownAcc) + "...");
+    this->printOnScreen("test starts in " + QString::number(this->countdownAcc) + "...");
     --this->countdownAcc;
     if(this->countdownAcc == 0){
 
@@ -111,6 +109,12 @@ void Widget::countdown()
         this->testMan->startTest();
     }
 
+
+}
+
+void Widget::printOnScreen(QString text)
+{
+    ui->terminalOutput->append(text);
 
 }
 
@@ -126,9 +130,6 @@ void Widget::on_refreshBtn_clicked()
 
     }
 
-
-
-
 }
 
 void Widget::on_device_found(QString device)
@@ -143,5 +144,26 @@ void Widget::on_device_found(QString device)
         // TODO: add condition for enabling btn
         ui->startTestBtn->setEnabled(true);
     }
+}
+
+
+void Widget::on_browseFilesBtn_clicked()
+{
+    QStringList chosenDir;
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::Directory);
+
+    if(dialog.exec()){
+        chosenDir = dialog.selectedFiles();
+        qDebug() << "chosen: " << chosenDir;
+
+        if(!chosenDir.isEmpty()){
+            ui->selectedPathOutput->setText(chosenDir[0]);
+            testMan->setSaveDir(chosenDir[0]);
+            this->printOnScreen("'" + chosenDir[0] + "'" + " selected as output path.");
+
+        }
+    }
+
 }
 

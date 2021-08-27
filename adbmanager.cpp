@@ -21,6 +21,51 @@ QString AdbManager::getDeviceByIndex(int index){
     return this->_foundDevices[index];
 }
 
+void AdbManager::getLogResult()
+{
+    char buffer[128];
+    qDebug() << " getLogResult()";
+
+    QString device = this->_selectedDevice;
+    QString adb = this->_absAdbPath;
+    // TODO: use the command 'adb logcat --regex="SHOT_TO_SHOT_O"' to perform regex on the fly
+    // TODO: might also use the extension "-m <number>" to leave after a certain number of lines
+    // TODO: run logcat on another thread
+    // https://developer.android.com/studio/command-line/logcat
+    QString cmd = adb + " -s " + device + " logcat | grep \"I CameraKpiTag: SHOT_TO_SHOT_O\"";
+    QString res = "";
+    //qDebug() << "issued command " << cmd << " with result " << res;
+
+    try {
+
+        // open pipe to file
+        FILE *pipe = popen(cmd.toStdString().c_str(), "r");
+        if(!pipe){
+            //return "adb couldn't get devices";
+        }
+
+        // read till end of process:
+        while (!feof(pipe)) {
+
+            // use buffer to read and add to result
+            if(fgets(buffer, 128, pipe) != NULL){
+                res += buffer;
+                qDebug() << res;
+
+            }
+
+        }
+
+        pclose(pipe);
+
+    }  catch (...) {
+        cout << "something happened";
+
+    }
+
+
+}
+
 void AdbManager::clickShutterBtn()
 {
     if(this->_selectedDevice.isEmpty()) throw logic_error("no device selected");

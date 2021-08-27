@@ -64,6 +64,7 @@ void TestManager::test_step()
 
     if(this->_currentSample == this->_samples){
         emit test_finished(this->_currentTest+1);
+        //this->_adb->getLogResult();
         this->_currentTest++;
         this->_currentSample = 0;
     }
@@ -77,6 +78,16 @@ void TestManager::test_step()
 
 
 
+}
+
+const QString &TestManager::saveDir() const
+{
+    return _saveDir;
+}
+
+void TestManager::setSaveDir(const QString &newSaveDir)
+{
+    _saveDir = newSaveDir;
 }
 
 
