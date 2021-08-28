@@ -21,20 +21,19 @@ QString AdbManager::getDeviceByIndex(int index){
     return this->_foundDevices[index];
 }
 
-void AdbManager::getLogResult()
+ QString AdbManager::getLogResult(QString adb_path, QString device, int logCount)
 {
     char buffer[128];
     qDebug() << " getLogResult()";
 
-    QString device = this->_selectedDevice;
-    QString adb = this->_absAdbPath;
     // TODO: use the command 'adb logcat --regex="SHOT_TO_SHOT_O"' to perform regex on the fly
-    // TODO: might also use the extension "-m <number>" to leave after a certain number of lines
     // TODO: run logcat on another thread
     // https://developer.android.com/studio/command-line/logcat
-    QString cmd = adb + " -s " + device + " logcat | grep \"I CameraKpiTag: SHOT_TO_SHOT_O\"";
+    QString cmd = adb_path + " -s " + device  +
+            " logcat " + "-m " + QString::number(logCount) + " --regex=\"SHOT_TO_SHOT_O :\"";
+    qDebug() << "issuing command " << cmd;
     QString res = "";
-    //qDebug() << "issued command " << cmd << " with result " << res;
+
 
     try {
 
@@ -50,7 +49,7 @@ void AdbManager::getLogResult()
             // use buffer to read and add to result
             if(fgets(buffer, 128, pipe) != NULL){
                 res += buffer;
-                qDebug() << res;
+                //qDebug() << res;
 
             }
 
@@ -62,6 +61,8 @@ void AdbManager::getLogResult()
         cout << "something happened";
 
     }
+
+    return res;
 
 
 }
@@ -81,6 +82,11 @@ void AdbManager::clickShutterBtn()
 
 int AdbManager::getDevFoundIndex(){
     return this->_foundDevIndex;
+}
+
+QString AdbManager::getAbsPath()
+{
+    return this->_absAdbPath;
 }
 
 void AdbManager::clearDeviceList(){

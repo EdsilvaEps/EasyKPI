@@ -39,6 +39,8 @@ private slots:
 
     void on_browseFilesBtn_clicked();
 
+    void on_test_results_available(const QString &res);
+
 private:
     Ui::Widget *ui;
     AdbManager *adb;

@@ -20,6 +20,7 @@ Widget::Widget(QWidget *parent)
     connect(testMan, &TestManager::step_finished, this, &Widget::on_test_step);
     connect(testMan, &TestManager::test_finished, this, &Widget::on_test_finished);
     connect(testMan, &TestManager::test_failed, this, &Widget::on_test_failed);
+    connect(testMan, &TestManager::test_results_available, this, &Widget::on_test_results_available);
 
     // connecting adbManager signals to widget slots
     connect(adb, &AdbManager::foundDevice, this, &Widget::on_device_found);
@@ -80,7 +81,7 @@ void Widget::on_test_finished(int test)
 {
     qDebug() << "test finished: ";
     this->printOnScreen("test " + QString::number(test) + " finished.");
-    adb->getLogResult();
+    //adb->getLogResult();
 
 
 }
@@ -164,6 +165,13 @@ void Widget::on_browseFilesBtn_clicked()
 
         }
     }
+
+}
+
+void Widget::on_test_results_available(const QString &res)
+{
+    printOnScreen("\n----RAW TEST RESULTS----");
+    printOnScreen(res);
 
 }
 

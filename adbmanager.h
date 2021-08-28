@@ -53,9 +53,13 @@ public:
 
     int getDevFoundIndex();
 
+    QString getAbsPath();
+
     QString getSelectedDevice();
 
     QString getDeviceByIndex(int index);
+
+    static QString getLogResult(QString adb_path, QString device, int logCount);
 
 
 signals:
@@ -64,7 +68,6 @@ signals:
 public slots:
     void clickShutterBtn();
 
-    void getLogResult();
 
 };
 

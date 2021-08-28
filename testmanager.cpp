@@ -7,6 +7,22 @@ TestManager::TestManager(int tests, int samples, int delay, AdbManager *adb):
     this->_adb = adb;
     this->_currentSample = 0;
     this->_currentTest = 0;
+
+    LogCollector *collector = new LogCollector(this->_adb->getAbsPath());
+    collector->moveToThread(&workerThread);
+    // connect signals and slots between LogCollector and TestManager
+    connect(&workerThread, &QThread::finished, collector, &QObject::deleteLater);
+    connect(this, &TestManager::start_collect, collector, &LogCollector::startCollecting);
+    connect(collector, &LogCollector::resultReady, this, &TestManager::handleLogResults);
+    workerThread.start();
+
+}
+
+TestManager::~TestManager()
+{
+    this->workerThread.quit();
+    this->workerThread.wait();
+
 }
 
 void TestManager::setTests(int tests){
@@ -24,6 +40,8 @@ void TestManager::setDelay(int delay){
 void TestManager::startTest(){
     if(this->_adb == NULL){ throw logic_error("no adb instance provided"); }
     if(this->_tests <= 0 || this->_samples <= 0 || this->_delay <= 0){ throw logic_error("invalid test parameters"); }
+
+    emit start_collect(this->_adb->getSelectedDevice(), this->_samples, this->_delay*2);
 
     try{
 
@@ -80,6 +98,12 @@ void TestManager::test_step()
 
 }
 
+void TestManager::handleLogResults(const QString &res)
+{
+    qDebug() << res;
+    emit test_results_available(res);
+}
+
 const QString &TestManager::saveDir() const
 {
     return _saveDir;
@@ -93,3 +117,15 @@ void TestManager::setSaveDir(const QString &newSaveDir)
 
 
 
+
+LogCollector::LogCollector(QString adb_path):
+    _adb_path(adb_path)
+{}
+
+void LogCollector::startCollecting(const QString &device, const int &logsCount, const int &time)
+{
+    // TODO: end this task after the end of 'time' constraint
+    int t = time;
+    QString res = AdbManager::getLogResult(this->_adb_path, device, logsCount);
+    emit resultReady(res);
+}
