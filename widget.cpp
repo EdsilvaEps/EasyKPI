@@ -81,9 +81,8 @@ void Widget::on_test_finished(int test)
 {
     qDebug() << "test finished: ";
     this->printOnScreen("test " + QString::number(test) + " finished.");
-    //adb->getLogResult();
-
-
+    // restart several variables, clear the log buffer.
+    this->adb->clearDeviceLog();
 }
 
 void Widget::on_test_failed(QString why)
@@ -103,11 +102,12 @@ void Widget::countdown()
 {
 
     this->printOnScreen("test starts in " + QString::number(this->countdownAcc) + "...");
-    --this->countdownAcc;
+    this->countdownAcc--;
     if(this->countdownAcc == 0){
 
         this->timer->stop();
         this->testMan->startTest();
+        this->countdownAcc = 3;
     }
 
 

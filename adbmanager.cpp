@@ -95,6 +95,13 @@ void AdbManager::clearDeviceList(){
     qDebug() << "Device list cleared";
 }
 
+void AdbManager::clearDeviceLog()
+{
+    QString cmd = this->_absAdbPath + " -s " + this->_selectedDevice + " logcat -c";
+    int res = system(cmd.toStdString().c_str());
+    qDebug() << "issued command " << cmd << " with result " << res;
+}
+
 void AdbManager::addDevice(QString device) {
 
     if(this->_foundDevIndex == MAX_DEVICES) throw overflow_error("Can't connect more devices");
