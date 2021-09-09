@@ -26,8 +26,6 @@ QString AdbManager::getDeviceByIndex(int index){
     char buffer[128];
     qDebug() << " getLogResult()";
 
-    // TODO: use the command 'adb logcat --regex="SHOT_TO_SHOT_O"' to perform regex on the fly
-    // TODO: run logcat on another thread
     // https://developer.android.com/studio/command-line/logcat
     QString cmd = adb_path + " -s " + device  +
             " logcat " + "-m " + QString::number(logCount) + " --regex=\"SHOT_TO_SHOT_O :\"";

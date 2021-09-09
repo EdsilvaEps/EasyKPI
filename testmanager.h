@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QList>
 #include <QThread>
+#include <cstdlib>
 
 class TestManager : public QObject
 {
@@ -47,6 +48,9 @@ signals:
     AdbManager* _adb;
     QThread workerThread;
 
+    void _wrapTest(); // cleans up threads and logs after the test is over
+    void _finishLogThread(); // ends the worker thread that collects logs
+
 
 
 };
@@ -60,12 +64,12 @@ class LogCollector : public QObject{
 
 public:
     LogCollector(QString adb_path);
+    ~LogCollector();
 
 public slots:
-    // function that collects the logs, receives int logsCount and int time
+    // function that collects the logs, receives int logsCount
     // logsCount - number of logs to collect
-    // time - duration of test
-    void startCollecting(const QString &device, const int &logsCount, const int &time);
+    void startCollecting(const QString &device, const int &logsCount);
 
 signals:
     void resultReady(const QString result);

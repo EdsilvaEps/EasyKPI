@@ -20,8 +20,7 @@ TestManager::TestManager(int tests, int samples, int delay, AdbManager *adb):
 
 TestManager::~TestManager()
 {
-    this->workerThread.quit();
-    this->workerThread.wait();
+    _finishLogThread();
 
 }
 
@@ -82,7 +81,7 @@ void TestManager::test_step()
 
     if(this->_currentSample == this->_samples){
         emit test_finished(this->_currentTest+1);
-        //this->_adb->getLogResult();
+        //this->_wrapTest();
         this->_currentTest++;
         this->_currentSample = 0;
     }
@@ -104,6 +103,23 @@ void TestManager::handleLogResults(const QString &res)
     emit test_results_available(res);
 }
 
+void TestManager::_wrapTest()
+{
+    qDebug() << "wrapping up test";
+    QTimer::singleShot(2000, this, &TestManager::_finishLogThread);
+    this->_adb->clearDeviceLog();
+
+}
+
+void TestManager::_finishLogThread()
+{
+    qDebug() << "trying to quit the collector thread...";
+    if(this->workerThread.isRunning()){
+        this->workerThread.quit();
+        this->workerThread.wait();
+    }
+}
+
 const QString &TestManager::saveDir() const
 {
     return _saveDir;
@@ -122,10 +138,14 @@ LogCollector::LogCollector(QString adb_path):
     _adb_path(adb_path)
 {}
 
-void LogCollector::startCollecting(const QString &device, const int &logsCount, const int &time)
+LogCollector::~LogCollector()
 {
-    // TODO: end this task after the end of 'time' constraint
-    int t = time;
+    qDebug() << "exitting Log collector";
+    exit(0);
+}
+
+void LogCollector::startCollecting(const QString &device, const int &logsCount)
+{
     QString res = AdbManager::getLogResult(this->_adb_path, device, logsCount);
     emit resultReady(res);
 }

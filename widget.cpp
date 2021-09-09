@@ -25,6 +25,9 @@ Widget::Widget(QWidget *parent)
     // connecting adbManager signals to widget slots
     connect(adb, &AdbManager::foundDevice, this, &Widget::on_device_found);
 
+    // connecting timer with countdown function
+    connect(timer, &QTimer::timeout, this, QOverload<>::of(&Widget::countdown));
+
     adb->getConnectedDevices();
     //ui->terminalOutput->append(deviceLog);
 
@@ -47,7 +50,12 @@ void Widget::on_startTestBtn_clicked()
     int delay = ui->delayTime->value();
 
     if(tests <= 0 || samples <= 0 || delay <= 0){
-        ui->terminalOutput->append("choose a valid amount of tests/samples and/or a valid interval time.");
+        printOnScreen("choose a valid amount of tests/samples and/or a valid interval time.");
+        return;
+    }
+
+    if(this->adb->getSelectedDevice().isEmpty()){
+        printOnScreen("connect a device to the usb port");
         return;
     }
 
@@ -55,16 +63,11 @@ void Widget::on_startTestBtn_clicked()
     testMan->setSamples(samples);
     testMan->setDelay(delay);
 
-    ui->terminalOutput->append("starting test with " + QString::number(tests) + " tests and " +
-                               QString::number(samples) + " samples...");
-
+    printOnScreen("starting test with " + QString::number(tests) + " tests and " +
+                  QString::number(samples) + " samples...");
 
     this->countdownAcc = 3;
-
-    connect(timer, &QTimer::timeout, this, QOverload<>::of(&Widget::countdown));
-
     timer->start(1000);
-
 
 
 }
@@ -81,8 +84,6 @@ void Widget::on_test_finished(int test)
 {
     qDebug() << "test finished: ";
     this->printOnScreen("test " + QString::number(test) + " finished.");
-    // restart several variables, clear the log buffer.
-    this->adb->clearDeviceLog();
 }
 
 void Widget::on_test_failed(QString why)
