@@ -51,6 +51,8 @@ public:
 
     void clearDeviceLog();
 
+    void setBufferSize(int size); // increase log buffer size (size is in MB)
+
     bool hasFoundDevices();
 
     int getDevFoundIndex();

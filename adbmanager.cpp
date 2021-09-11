@@ -27,8 +27,15 @@ QString AdbManager::getDeviceByIndex(int index){
     qDebug() << " getLogResult()";
 
     // https://developer.android.com/studio/command-line/logcat
-    QString cmd = adb_path + " -s " + device  +
-            " logcat " + "-m " + QString::number(logCount) + " --regex=\"SHOT_TO_SHOT_O :\"";
+    // the line below opens a stream of logs and waits for logCount logs, unreliable against user errors
+    // where we might get less logs than expected.
+    //QString cmd = adb_path + " -s " + device  +
+    //        " logcat " + "-m " + QString::number(logCount) + " --regex=\"SHOT_TO_SHOT_O :\"";
+
+    // dumps the entire log buffer filtering by the given tag
+    // TODO: make a menu so the user can setup the preferred buffer size
+    // TODO: if this method works, refactor this function without logCount everywhere its used.
+    QString cmd = adb_path + " -s " + device  + " logcat -d --regex=\"SHOT_TO_SHOT_O :\"";
     qDebug() << "issuing command " << cmd;
     QString res = "";
 
@@ -96,6 +103,13 @@ void AdbManager::clearDeviceList(){
 void AdbManager::clearDeviceLog()
 {
     QString cmd = this->_absAdbPath + " -s " + this->_selectedDevice + " logcat -c";
+    int res = system(cmd.toStdString().c_str());
+    qDebug() << "issued command " << cmd << " with result " << res;
+}
+
+void AdbManager::setBufferSize(int size)
+{
+    QString cmd = this->_absAdbPath + " -s " + this->_selectedDevice + " logcat -G " + QString::number(size) + "M";
     int res = system(cmd.toStdString().c_str());
     qDebug() << "issued command " << cmd << " with result " << res;
 }

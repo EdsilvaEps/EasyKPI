@@ -8,21 +8,16 @@ TestManager::TestManager(int tests, int samples, int delay, AdbManager *adb):
     this->_currentSample = 0;
     this->_currentTest = 0;
 
-    LogCollector *collector = new LogCollector(this->_adb->getAbsPath());
-    collector->moveToThread(&workerThread);
+    //LogCollector *collector = new LogCollector(this->_adb->getAbsPath());
+    //collector->moveToThread(&workerThread);
     // connect signals and slots between LogCollector and TestManager
-    connect(&workerThread, &QThread::finished, collector, &QObject::deleteLater);
-    connect(this, &TestManager::start_collect, collector, &LogCollector::startCollecting);
-    connect(collector, &LogCollector::resultReady, this, &TestManager::handleLogResults);
-    workerThread.start();
+    //connect(&workerThread, &QThread::finished, collector, &QObject::deleteLater);
+    //connect(this, &TestManager::start_collect, collector, &LogCollector::startCollecting);
+    //connect(collector, &LogCollector::resultReady, this, &TestManager::handleLogResults);
+    //workerThread.start();
 
 }
 
-TestManager::~TestManager()
-{
-    _finishLogThread();
-
-}
 
 void TestManager::setTests(int tests){
     this->_tests = tests;
@@ -40,7 +35,8 @@ void TestManager::startTest(){
     if(this->_adb == NULL){ throw logic_error("no adb instance provided"); }
     if(this->_tests <= 0 || this->_samples <= 0 || this->_delay <= 0){ throw logic_error("invalid test parameters"); }
 
-    emit start_collect(this->_adb->getSelectedDevice(), this->_samples, this->_delay*2);
+    //emit start_collect(this->_adb->getSelectedDevice(), this->_samples, this->_delay*2);
+    this->_adb->clearDeviceLog();
 
     try{
 
@@ -59,7 +55,6 @@ void TestManager::startTest(){
         qDebug() << "exception " << ex.what() << " in TestManager::startTest()";
         emit test_failed(QString::fromStdString(ex.what()));
     }
-
 
 
 }
@@ -81,6 +76,11 @@ void TestManager::test_step()
 
     if(this->_currentSample == this->_samples){
         emit test_finished(this->_currentTest+1);
+        // TODO: if this method works, make this function non-static
+        QString res = AdbManager::getLogResult(this->_adb->getAbsPath(), this->_adb->getSelectedDevice(),0);
+        //QString res = AdbManager::getLogResult(this->_adb_path, device, logsCount);
+        emit test_results_available(res);
+        this->_adb->clearDeviceLog();
         //this->_wrapTest();
         this->_currentTest++;
         this->_currentSample = 0;
@@ -103,22 +103,22 @@ void TestManager::handleLogResults(const QString &res)
     emit test_results_available(res);
 }
 
-void TestManager::_wrapTest()
+/*void TestManager::_wrapTest()
 {
     qDebug() << "wrapping up test";
     QTimer::singleShot(2000, this, &TestManager::_finishLogThread);
     this->_adb->clearDeviceLog();
 
-}
+}*/
 
-void TestManager::_finishLogThread()
+/*void TestManager::_finishLogThread()
 {
     qDebug() << "trying to quit the collector thread...";
     if(this->workerThread.isRunning()){
         this->workerThread.quit();
         this->workerThread.wait();
     }
-}
+}*/
 
 const QString &TestManager::saveDir() const
 {

@@ -16,6 +16,8 @@ Widget::Widget(QWidget *parent)
     adb = new AdbManager("~/Android/Sdk/platform-tools/adb");
     testMan = new TestManager(0,0,4000,adb);
 
+    adb->setBufferSize(64);
+
     // connecting testMans signals to widget slots
     connect(testMan, &TestManager::step_finished, this, &Widget::on_test_step);
     connect(testMan, &TestManager::test_finished, this, &Widget::on_test_finished);

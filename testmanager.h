@@ -15,7 +15,6 @@ class TestManager : public QObject
 
 public:
     TestManager(int tests=0, int samples=0, int delay=0, AdbManager* adb=NULL);
-    ~TestManager();
     // getters and setters for test variables
     void setTests(int tests);
     void setSamples(int samples);
@@ -46,10 +45,10 @@ signals:
     int _currentSample;
     QString _saveDir;
     AdbManager* _adb;
-    QThread workerThread;
+    //QThread workerThread;
 
-    void _wrapTest(); // cleans up threads and logs after the test is over
-    void _finishLogThread(); // ends the worker thread that collects logs
+    //void _wrapTest(); // cleans up threads and logs after the test is over
+    //void _finishLogThread(); // ends the worker thread that collects logs
 
 
 
