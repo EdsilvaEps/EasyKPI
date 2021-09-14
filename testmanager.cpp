@@ -8,14 +8,6 @@ TestManager::TestManager(int tests, int samples, int delay, AdbManager *adb):
     this->_currentSample = 0;
     this->_currentTest = 0;
 
-    //LogCollector *collector = new LogCollector(this->_adb->getAbsPath());
-    //collector->moveToThread(&workerThread);
-    // connect signals and slots between LogCollector and TestManager
-    //connect(&workerThread, &QThread::finished, collector, &QObject::deleteLater);
-    //connect(this, &TestManager::start_collect, collector, &LogCollector::startCollecting);
-    //connect(collector, &LogCollector::resultReady, this, &TestManager::handleLogResults);
-    //workerThread.start();
-
 }
 
 
@@ -76,12 +68,9 @@ void TestManager::test_step()
 
     if(this->_currentSample == this->_samples){
         emit test_finished(this->_currentTest+1);
-        // TODO: if this method works, make this function non-static
-        QString res = AdbManager::getLogResult(this->_adb->getAbsPath(), this->_adb->getSelectedDevice(),0);
-        //QString res = AdbManager::getLogResult(this->_adb_path, device, logsCount);
+        QString res = this->_adb->getLogResult();
         emit test_results_available(res);
         this->_adb->clearDeviceLog();
-        //this->_wrapTest();
         this->_currentTest++;
         this->_currentSample = 0;
     }
@@ -103,22 +92,6 @@ void TestManager::handleLogResults(const QString &res)
     emit test_results_available(res);
 }
 
-/*void TestManager::_wrapTest()
-{
-    qDebug() << "wrapping up test";
-    QTimer::singleShot(2000, this, &TestManager::_finishLogThread);
-    this->_adb->clearDeviceLog();
-
-}*/
-
-/*void TestManager::_finishLogThread()
-{
-    qDebug() << "trying to quit the collector thread...";
-    if(this->workerThread.isRunning()){
-        this->workerThread.quit();
-        this->workerThread.wait();
-    }
-}*/
 
 const QString &TestManager::saveDir() const
 {
@@ -146,6 +119,6 @@ LogCollector::~LogCollector()
 
 void LogCollector::startCollecting(const QString &device, const int &logsCount)
 {
-    QString res = AdbManager::getLogResult(this->_adb_path, device, logsCount);
-    emit resultReady(res);
+    //QString res = AdbManager::getLogResult(t);
+    //emit resultReady(res);
 }

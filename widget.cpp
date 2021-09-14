@@ -4,6 +4,10 @@
 #include <string>
 #include <QTimer>
 
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
@@ -175,6 +179,22 @@ void Widget::on_test_results_available(const QString &res)
 {
     printOnScreen("\n----RAW TEST RESULTS----");
     printOnScreen(res);
+
+    // example: 09-13 12:30:10.693 11667 12893 I CameraKpiTag: SHOT_TO_SHOT_O : 294 ms
+    // TODO: maybe this processing does not belong to the widget, change that later.
+    QRegularExpression re("SHOT_TO_SHOT_O : ([0-9]+)", QRegularExpression::MultilineOption);
+
+    QRegularExpressionMatchIterator match = re.globalMatch(res);
+    qDebug() << "text to process";
+    qDebug() << res;
+    if(!match.hasNext()) qDebug() << "found nothing on regex";
+
+    printOnScreen("----TREATED RESULTS----");
+    while(match.hasNext()){
+        QRegularExpressionMatch m = match.next();
+        qDebug() << m.captured(1);
+        printOnScreen(m.captured(1));
+    }
 
 }
 

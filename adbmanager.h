@@ -63,7 +63,7 @@ public:
 
     QString getDeviceByIndex(int index);
 
-    static QString getLogResult(QString adb_path, QString device, int logCount);
+    QString getLogResult();
 
 
 signals:

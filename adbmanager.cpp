@@ -21,8 +21,11 @@ QString AdbManager::getDeviceByIndex(int index){
     return this->_foundDevices[index];
 }
 
- QString AdbManager::getLogResult(QString adb_path, QString device, int logCount)
+ QString AdbManager::getLogResult()
 {
+    if(this->_absAdbPath.isEmpty()) throw logic_error("no adb tools found");
+    if(this->_selectedDevice.isEmpty()) throw logic_error("no device found");
+
     char buffer[128];
     qDebug() << " getLogResult()";
 
@@ -34,8 +37,7 @@ QString AdbManager::getDeviceByIndex(int index){
 
     // dumps the entire log buffer filtering by the given tag
     // TODO: make a menu so the user can setup the preferred buffer size
-    // TODO: if this method works, refactor this function without logCount everywhere its used.
-    QString cmd = adb_path + " -s " + device  + " logcat -d --regex=\"SHOT_TO_SHOT_O :\"";
+    QString cmd = this->_absAdbPath + " -s " + this->_selectedDevice  + " logcat -d --regex=\"SHOT_TO_SHOT_O :\"";
     qDebug() << "issuing command " << cmd;
     QString res = "";
 
@@ -178,9 +180,6 @@ QString AdbManager::getConnectedDevices()
         if(this->_foundDevices->count() == MAX_DEVICES) throw overflow_error("device list full");
         this->addDevice(m.captured(1));
         emit foundDevice(m.captured(1));
-
-
-
 
     }
 
