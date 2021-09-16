@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <string>
 #include <QTimer>
+#include <QMessageBox>
 
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -27,6 +28,7 @@ Widget::Widget(QWidget *parent)
     connect(testMan, &TestManager::test_finished, this, &Widget::on_test_finished);
     connect(testMan, &TestManager::test_failed, this, &Widget::on_test_failed);
     connect(testMan, &TestManager::test_results_available, this, &Widget::on_test_results_available);
+    connect(testMan, &TestManager::testing_status_changed, this, &Widget::on_testing_status_changed);
 
     // connecting adbManager signals to widget slots
     connect(adb, &AdbManager::foundDevice, this, &Widget::on_device_found);
@@ -35,6 +37,7 @@ Widget::Widget(QWidget *parent)
     connect(timer, &QTimer::timeout, this, QOverload<>::of(&Widget::countdown));
 
     adb->getConnectedDevices();
+    ui->stopTestBtn->setEnabled(false);
     //ui->terminalOutput->append(deviceLog);
 
     //ui->startTestBtn->setEnabled(false);
@@ -83,6 +86,7 @@ void Widget::on_stopTestBtn_clicked()
 {
 
     ui->terminalOutput->append("test stopped.");
+    this->testMan->stopTest();
 
 }
 
@@ -187,14 +191,42 @@ void Widget::on_test_results_available(const QString &res)
     QRegularExpressionMatchIterator match = re.globalMatch(res);
     qDebug() << "text to process";
     qDebug() << res;
-    if(!match.hasNext()) qDebug() << "found nothing on regex";
+    if(!match.hasNext()){
+        // TODO: put this on a rss file
+        QString warning_msg = "Your test returned no results, make sure you "
+"have the MotCamera app open and the device is running on an user build.";
 
+        this->warning_message(warning_msg);
+        qDebug() << "found nothing on regex";
+    }
     printOnScreen("----TREATED RESULTS----");
     while(match.hasNext()){
         QRegularExpressionMatch m = match.next();
         qDebug() << m.captured(1);
         printOnScreen(m.captured(1));
     }
+
+}
+
+void Widget::on_testing_status_changed(const bool isTesting)
+{
+    if(isTesting){
+        ui->startTestBtn->setDisabled(true);
+        ui->stopTestBtn->setDisabled(false);
+    } else{
+        ui->startTestBtn->setDisabled(false);
+        ui->stopTestBtn->setDisabled(true);
+    }
+
+
+}
+
+void Widget::warning_message(const QString &msg)
+{
+    QMessageBox *msgBox = new QMessageBox;
+    msgBox->setText(msg);
+    msgBox->setIcon(QMessageBox::Warning);
+    msgBox->exec();
 
 }
 

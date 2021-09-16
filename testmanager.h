@@ -25,6 +25,7 @@ public:
 
     const QString &saveDir() const;
     void setSaveDir(const QString &newSaveDir);
+    void stopTest(); // stops an ongoing test routine
 
 signals:
     void step_finished(int tests, int samples); // reported when a sample has been collected
@@ -32,6 +33,7 @@ signals:
     void test_failed(QString why); // reported when something happened halfway through the test
     void start_collect(const QString &device, const int &logCount, const int &duration);
     void test_results_available(const QString &res);
+    void testing_status_changed(const bool isTesting); // reported when testing should start or end
 
  private slots:
     void test_step(); //this triggers a snapshot using the AdbManager obj
@@ -43,6 +45,7 @@ signals:
     int _delay;
     int _currentTest;
     int _currentSample;
+    bool _testing = false;
     QString _saveDir;
     AdbManager* _adb;
     //QThread workerThread;
@@ -56,7 +59,7 @@ signals:
 
 /* class for multithreading - will capture the logs while the
    kpi test is happening on the main thread */
-class LogCollector : public QObject{
+/*class LogCollector : public QObject{
     Q_OBJECT
 
     QString _adb_path;
@@ -72,7 +75,7 @@ public slots:
 
 signals:
     void resultReady(const QString result);
-};
+};*/
 
 
 #endif // TESTMANAGER_H

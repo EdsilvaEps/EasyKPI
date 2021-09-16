@@ -27,7 +27,8 @@ void TestManager::startTest(){
     if(this->_adb == NULL){ throw logic_error("no adb instance provided"); }
     if(this->_tests <= 0 || this->_samples <= 0 || this->_delay <= 0){ throw logic_error("invalid test parameters"); }
 
-    //emit start_collect(this->_adb->getSelectedDevice(), this->_samples, this->_delay*2);
+    this->_testing = true;
+    emit testing_status_changed(this->_testing);
     this->_adb->clearDeviceLog();
 
     try{
@@ -62,6 +63,7 @@ void TestManager::startTest(int tests, int samples, int delay)
 
 void TestManager::test_step()
 {
+    if(!_testing) return;
     qDebug() << "shutter btn";
     this->_adb->clickShutterBtn();
     emit step_finished(this->_currentTest+1, ++this->_currentSample);
@@ -73,6 +75,8 @@ void TestManager::test_step()
         this->_adb->clearDeviceLog();
         this->_currentTest++;
         this->_currentSample = 0;
+        this->_testing = false;
+        emit testing_status_changed(_testing);
     }
 
     // test is over
@@ -103,11 +107,18 @@ void TestManager::setSaveDir(const QString &newSaveDir)
     _saveDir = newSaveDir;
 }
 
+void TestManager::stopTest()
+{
+    this->_testing = false;
+    emit testing_status_changed(this->_testing);
+    qDebug() << "testing variable set to false";
+}
 
 
 
 
-LogCollector::LogCollector(QString adb_path):
+
+/*LogCollector::LogCollector(QString adb_path):
     _adb_path(adb_path)
 {}
 
@@ -121,4 +132,4 @@ void LogCollector::startCollecting(const QString &device, const int &logsCount)
 {
     //QString res = AdbManager::getLogResult(t);
     //emit resultReady(res);
-}
+}*/

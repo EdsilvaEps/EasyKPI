@@ -41,6 +41,10 @@ private slots:
 
     void on_test_results_available(const QString &res);
 
+    void on_testing_status_changed(const bool isTesting);
+
+    void warning_message(const QString &msg);
+
 private:
     Ui::Widget *ui;
     AdbManager *adb;
