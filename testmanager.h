@@ -8,6 +8,8 @@
 #include <QList>
 #include <QThread>
 #include <cstdlib>
+#include <iostream>
+#include <fstream>
 
 class TestManager : public QObject
 {
@@ -34,6 +36,9 @@ signals:
     void start_collect(const QString &device, const int &logCount, const int &duration);
     void test_results_available(const QString &res);
     void testing_status_changed(const bool isTesting); // reported when testing should start or end
+    void test_saved(); // reported when test is successfully saved
+    void no_save_path(); // reported when there's no save path
+    void error(const QString &err); // reported when an error is caught
 
  private slots:
     void test_step(); //this triggers a snapshot using the AdbManager obj
@@ -53,29 +58,12 @@ signals:
     //void _wrapTest(); // cleans up threads and logs after the test is over
     //void _finishLogThread(); // ends the worker thread that collects logs
 
+    void saveTest(QString testData);
+
 
 
 };
 
-/* class for multithreading - will capture the logs while the
-   kpi test is happening on the main thread */
-/*class LogCollector : public QObject{
-    Q_OBJECT
-
-    QString _adb_path;
-
-public:
-    LogCollector(QString adb_path);
-    ~LogCollector();
-
-public slots:
-    // function that collects the logs, receives int logsCount
-    // logsCount - number of logs to collect
-    void startCollecting(const QString &device, const int &logsCount);
-
-signals:
-    void resultReady(const QString result);
-};*/
 
 
 #endif // TESTMANAGER_H

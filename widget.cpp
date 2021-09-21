@@ -29,6 +29,8 @@ Widget::Widget(QWidget *parent)
     connect(testMan, &TestManager::test_failed, this, &Widget::on_test_failed);
     connect(testMan, &TestManager::test_results_available, this, &Widget::on_test_results_available);
     connect(testMan, &TestManager::testing_status_changed, this, &Widget::on_testing_status_changed);
+    connect(testMan, &TestManager::no_save_path, this, &Widget::on_save_path_missing);
+    connect(testMan, &TestManager::error, this, &Widget::on_error);
 
     // connecting adbManager signals to widget slots
     connect(adb, &AdbManager::foundDevice, this, &Widget::on_device_found);
@@ -161,20 +163,16 @@ void Widget::on_device_found(QString device)
 
 void Widget::on_browseFilesBtn_clicked()
 {
-    QStringList chosenDir;
-    QFileDialog dialog(this);
-    dialog.setFileMode(QFileDialog::Directory);
+    // TODO: make this path more dynamic
+    // TODO: add exception for bad path
+    QString chosenDir = QFileDialog::getSaveFileName(this, tr("Save test file"),
+                                                "/home/edson/untitled.txt",
+                                                tr("Text files (*.txt)"));
 
-    if(dialog.exec()){
-        chosenDir = dialog.selectedFiles();
-        qDebug() << "chosen: " << chosenDir;
-
-        if(!chosenDir.isEmpty()){
-            ui->selectedPathOutput->setText(chosenDir[0]);
-            testMan->setSaveDir(chosenDir[0]);
-            this->printOnScreen("'" + chosenDir[0] + "'" + " selected as output path.");
-
-        }
+    if(!chosenDir.isEmpty()){
+        ui->selectedPathOutput->setText(chosenDir);
+        testMan->setSaveDir(chosenDir);
+        printOnScreen(chosenDir + " selected as output path");
     }
 
 }
@@ -223,10 +221,30 @@ void Widget::on_testing_status_changed(const bool isTesting)
 
 void Widget::warning_message(const QString &msg)
 {
-    QMessageBox *msgBox = new QMessageBox;
-    msgBox->setText(msg);
-    msgBox->setIcon(QMessageBox::Warning);
-    msgBox->exec();
+    QMessageBox::warning(this, "Warning", msg, QMessageBox::Ok);
+
+}
+
+void Widget::on_error(const QString &msg)
+{
+    QMessageBox::critical(this, "Error", msg, QMessageBox::Ok);
+
+}
+
+void Widget::on_save_path_missing()
+{
+    int ret = QMessageBox::question(this, "Save Test Files", "Do you wish to save your test data?",
+                                                   QMessageBox::Ok | QMessageBox::Cancel);
+
+    if (ret == QMessageBox::Ok){
+        qDebug() << "User clicked on OK";
+        // TODO: open QFileDialog here
+    }
+
+    if(ret == QMessageBox::Cancel){
+        qDebug() << "Usr clicked on cancel";
+    }
+
 
 }
 

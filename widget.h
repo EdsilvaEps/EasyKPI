@@ -45,6 +45,10 @@ private slots:
 
     void warning_message(const QString &msg);
 
+    void on_error(const QString &msg);
+
+    void on_save_path_missing();
+
 private:
     Ui::Widget *ui;
     AdbManager *adb;

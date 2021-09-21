@@ -77,6 +77,14 @@ void TestManager::test_step()
         this->_currentSample = 0;
         this->_testing = false;
         emit testing_status_changed(_testing);
+
+        try {
+            saveTest(res);
+        }  catch (runtime_error &e) {
+            QString ex = e.what();
+            emit error(ex);
+        }
+
     }
 
     // test is over
@@ -94,6 +102,25 @@ void TestManager::handleLogResults(const QString &res)
 {
     qDebug() << res;
     emit test_results_available(res);
+}
+
+void TestManager::saveTest(QString testData)
+{
+    qDebug() << "trying to save test to path " + _saveDir;
+    if(_saveDir.isEmpty()){
+        qDebug() << "path is empty";
+        emit no_save_path();
+        return;
+    }
+
+    ofstream saveFile(_saveDir.toStdString());
+    if(saveFile.is_open()){
+        saveFile <<  testData.toStdString();
+        saveFile.close();
+
+    }
+    else throw runtime_error("could not open file");
+
 }
 
 
