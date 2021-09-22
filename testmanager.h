@@ -28,6 +28,7 @@ public:
     const QString &saveDir() const;
     void setSaveDir(const QString &newSaveDir);
     void stopTest(); // stops an ongoing test routine
+    void saveTest(QString testData); // function for saving test data to file.
 
 signals:
     void step_finished(int tests, int samples); // reported when a sample has been collected
@@ -37,7 +38,7 @@ signals:
     void test_results_available(const QString &res);
     void testing_status_changed(const bool isTesting); // reported when testing should start or end
     void test_saved(); // reported when test is successfully saved
-    void no_save_path(); // reported when there's no save path
+    void no_save_path(QString testData); // reported when there's no save path - send testdata so user can decide what to do with it
     void error(const QString &err); // reported when an error is caught
 
  private slots:
@@ -58,7 +59,6 @@ signals:
     //void _wrapTest(); // cleans up threads and logs after the test is over
     //void _finishLogThread(); // ends the worker thread that collects logs
 
-    void saveTest(QString testData);
 
 
 

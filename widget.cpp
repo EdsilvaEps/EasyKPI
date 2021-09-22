@@ -4,6 +4,8 @@
 #include <string>
 #include <QTimer>
 #include <QMessageBox>
+#include <QMenuBar>
+#include <QToolBar>
 
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -20,8 +22,6 @@ Widget::Widget(QWidget *parent)
 
     adb = new AdbManager("~/Android/Sdk/platform-tools/adb");
     testMan = new TestManager(0,0,4000,adb);
-
-    adb->setBufferSize(64);
 
     // connecting testMans signals to widget slots
     connect(testMan, &TestManager::step_finished, this, &Widget::on_test_step);
@@ -40,9 +40,22 @@ Widget::Widget(QWidget *parent)
 
     adb->getConnectedDevices();
     ui->stopTestBtn->setEnabled(false);
-    //ui->terminalOutput->append(deviceLog);
 
-    //ui->startTestBtn->setEnabled(false);
+    //TODO: Transform this project in qwindow based project
+    /*
+    QMenu * menuItems;
+    QMenuBar * menubar = new QMenuBar(this);
+    menuItems = menubar->addMenu(tr("&File"));
+    menuItems->addAction("newAct");
+    */
+
+   // QVBoxLayout *vlayout = new QVBoxLayout();
+    //vlayout->setMenuBar(menubar);
+
+    //QWidget * dockContent = new QWidget();
+    //dockContent->setLayout(vlayout);
+    //this->setLayout(vlayout);
+
 
 
 
@@ -132,6 +145,23 @@ void Widget::printOnScreen(QString text)
 
 }
 
+int Widget::openFileDialog()
+{
+    // TODO: make this path more dynamic
+    // TODO: add exception for bad path
+    QString chosenDir = QFileDialog::getSaveFileName(this, tr("Save test file"),
+                                                "/home/edson/untitled.txt",
+                                                tr("Text files (*.txt)"));
+
+    if(!chosenDir.isEmpty()){
+        ui->selectedPathOutput->setText(chosenDir);
+        testMan->setSaveDir(chosenDir);
+        printOnScreen(chosenDir + " selected as output path");
+        return 1;
+    }
+    return 0;
+}
+
 
 void Widget::on_refreshBtn_clicked()
 {
@@ -157,23 +187,15 @@ void Widget::on_device_found(QString device)
 
         // TODO: add condition for enabling btn
         ui->startTestBtn->setEnabled(true);
+        adb->setBufferSize(64);
+
     }
 }
 
 
 void Widget::on_browseFilesBtn_clicked()
 {
-    // TODO: make this path more dynamic
-    // TODO: add exception for bad path
-    QString chosenDir = QFileDialog::getSaveFileName(this, tr("Save test file"),
-                                                "/home/edson/untitled.txt",
-                                                tr("Text files (*.txt)"));
-
-    if(!chosenDir.isEmpty()){
-        ui->selectedPathOutput->setText(chosenDir);
-        testMan->setSaveDir(chosenDir);
-        printOnScreen(chosenDir + " selected as output path");
-    }
+    openFileDialog();
 
 }
 
@@ -231,14 +253,17 @@ void Widget::on_error(const QString &msg)
 
 }
 
-void Widget::on_save_path_missing()
+void Widget::on_save_path_missing(const QString &testData)
 {
     int ret = QMessageBox::question(this, "Save Test Files", "Do you wish to save your test data?",
                                                    QMessageBox::Ok | QMessageBox::Cancel);
 
     if (ret == QMessageBox::Ok){
         qDebug() << "User clicked on OK";
-        // TODO: open QFileDialog here
+        if(openFileDialog()){
+            testMan->saveTest(testData);
+            printOnScreen("data saved on " + ui->selectedPathOutput->text());
+        }
     }
 
     if(ret == QMessageBox::Cancel){
@@ -247,4 +272,5 @@ void Widget::on_save_path_missing()
 
 
 }
+
 

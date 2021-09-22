@@ -47,7 +47,7 @@ private slots:
 
     void on_error(const QString &msg);
 
-    void on_save_path_missing();
+    void on_save_path_missing(const QString &testData);
 
 private:
     Ui::Widget *ui;
@@ -59,6 +59,8 @@ private:
     void countdown();
 
     void printOnScreen(QString text);
+
+    int openFileDialog();
 
 };
 #endif // WIDGET_H

@@ -109,7 +109,7 @@ void TestManager::saveTest(QString testData)
     qDebug() << "trying to save test to path " + _saveDir;
     if(_saveDir.isEmpty()){
         qDebug() << "path is empty";
-        emit no_save_path();
+        emit no_save_path(testData);
         return;
     }
 
@@ -142,21 +142,3 @@ void TestManager::stopTest()
 }
 
 
-
-
-
-/*LogCollector::LogCollector(QString adb_path):
-    _adb_path(adb_path)
-{}
-
-LogCollector::~LogCollector()
-{
-    qDebug() << "exitting Log collector";
-    exit(0);
-}
-
-void LogCollector::startCollecting(const QString &device, const int &logsCount)
-{
-    //QString res = AdbManager::getLogResult(t);
-    //emit resultReady(res);
-}*/
