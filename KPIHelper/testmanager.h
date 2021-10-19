@@ -54,11 +54,6 @@ signals:
     bool _testing = false;
     QString _saveDir;
     AdbManager* _adb;
-    //QThread workerThread;
-
-    //void _wrapTest(); // cleans up threads and logs after the test is over
-    //void _finishLogThread(); // ends the worker thread that collects logs
-
 
 
 

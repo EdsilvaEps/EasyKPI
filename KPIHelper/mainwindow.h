@@ -48,13 +48,16 @@ private slots:
 
     void on_save_path_missing(const QString &testData);
 
-    void on_action_setup_triggered();
+    void on_action_setup_triggered(); // opens the setup menu
+
+    void on_actionTerminal_text_triggered(); // opens a dialog for changing terminal text font
 
 private:
     Ui::MainWindow *ui;
     AdbManager *adb;
     TestManager *testMan;
     QTimer *timer;
+    QFont terminalFont;
     int countdownAcc;
 
     void countdown();

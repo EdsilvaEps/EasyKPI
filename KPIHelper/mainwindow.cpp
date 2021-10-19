@@ -8,6 +8,8 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
+#include <QFontDialog>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -20,6 +22,21 @@ MainWindow::MainWindow(QWidget *parent)
 
     adb = new AdbManager("~/Android/Sdk/platform-tools/adb");
     testMan = new TestManager(0,0,4000,adb);
+
+    //getting terminal font settings
+    QSettings settings("IPE", "KPIHelper");
+    settings.beginGroup("settings");
+    if(settings.contains("terminalFont.family")){
+        qDebug() << "Font selected: " <<  settings.value("terminalFont.font", QVariant("")).toString();
+        this->terminalFont.setFamily(settings.value("terminalFont.family", QVariant("")).toString());
+        this->terminalFont.setPointSize(settings.value("terminalFont.size", QVariant(10)).toInt());
+        this->terminalFont.setBold(settings.value("terminalFont.bold", QVariant(false)).toBool());
+        this->terminalFont.setItalic(settings.value("terminalFont.italic", QVariant(false)).toBool());
+        ui->terminalOutput->setFont(terminalFont);
+    }
+    settings.endGroup();
+
+
 
     // connecting testMans signals to widget slots
     connect(testMan, &TestManager::step_finished, this, &MainWindow::on_test_step);
@@ -144,7 +161,6 @@ void MainWindow::countdown()
 void MainWindow::printOnScreen(QString text)
 {
     ui->terminalOutput->append(text);
-
 }
 
 void MainWindow::on_device_found(QString device)
@@ -266,5 +282,29 @@ void MainWindow::on_action_setup_triggered()
 
     dialog->exec();
 
+}
+
+
+void MainWindow::on_actionTerminal_text_triggered()
+{
+    bool ok;
+    QFont font = QFontDialog::getFont(
+                &ok, QFont("Helvetica [Cronyx]", 10), this);
+
+    if(ok){
+        ui->terminalOutput->setFont(font);
+        // save font settings:
+        QSettings settings("IPE", "KPIHelper");
+        settings.beginGroup("settings");
+        settings.setValue("terminalFont.family", font.family());
+        settings.setValue("terminalFont.size", font.pointSize());
+        settings.setValue("terminalFont.bold", font.bold());
+        settings.setValue("terminalFont.italic", font.italic());
+        settings.setValue("terminalFont.font", font.toString());
+        settings.endGroup();
+
+    } else{
+        QMessageBox::information(this, "Message", "User did not choose a font");
+    }
 }
 
