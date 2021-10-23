@@ -1,19 +1,29 @@
 #include "testmanager.h"
+#include "qsettings.h"
 
-
-TestManager::TestManager(int tests, int samples, int delay, AdbManager *adb):
-    _tests(tests), _samples(samples), _delay(delay)
+TestManager::TestManager()
 {
-    this->_adb = adb;
+    QSettings settings("IPE", "KPIHelper");
+    settings.beginGroup("settings");
+    int samples = settings.value("samples", QVariant(0)).toInt();
+    double interval = settings.value("interval", QVariant(0)).toDouble();
+    double bufferIncrease =  settings.value("bufferIncrease", QVariant(0)).toDouble();
+    QString adbPath = settings.value("adbPath", QVariant("")).toString();
+
+    settings.endGroup();
+
+    this->_samples = samples;
+    this->_delay = interval;
+    this->_bufferIncrease = bufferIncrease;
+    this->_adb = new AdbManager(adbPath);
     this->_currentSample = 0;
-    this->_currentTest = 0;
 
 }
 
 
-void TestManager::setTests(int tests){
+/*void TestManager::setTests(int tests){
     this->_tests = tests;
-}
+}*/
 
 void TestManager::setSamples(int samples){
     this->_samples = samples;
@@ -25,7 +35,7 @@ void TestManager::setDelay(int delay){
 
 void TestManager::startTest(){
     if(this->_adb == NULL){ throw logic_error("no adb instance provided"); }
-    if(this->_tests <= 0 || this->_samples <= 0 || this->_delay <= 0){ throw logic_error("invalid test parameters"); }
+    if(this->_samples <= 0 || this->_delay <= 0){ throw logic_error("invalid test parameters"); }
 
     this->_testing = true;
     emit testing_status_changed(this->_testing);
@@ -34,13 +44,11 @@ void TestManager::startTest(){
     try{
 
         int timer = 10; // inicial interval
-        for(int tst = 0; tst < this->_tests; tst++){
-            for(int smp = 0; smp < this->_samples; smp++){
-                qDebug() << "Test " << tst+1 << " Sample " << smp+1 ;
-                QTimer::singleShot(timer, this ,SLOT(test_step()));
-                timer += this->_delay;
+        for(int smp = 0; smp < this->_samples; smp++){
+            qDebug() << " Sample " << smp+1 ;
+            QTimer::singleShot(timer, this ,SLOT(test_step()));
+            timer += this->_delay;
 
-            }
         }
 
 
@@ -52,9 +60,8 @@ void TestManager::startTest(){
 
 }
 
-void TestManager::startTest(int tests, int samples, int delay)
+void TestManager::startTest(int samples, int delay)
 {
-    this->setTests(tests);
     this->setSamples(samples);
     this->setDelay(delay);
     this->startTest();
@@ -66,14 +73,13 @@ void TestManager::test_step()
     if(!_testing) return;
     qDebug() << "shutter btn";
     this->_adb->clickShutterBtn();
-    emit step_finished(this->_currentTest+1, ++this->_currentSample);
+    emit step_finished(++this->_currentSample);
 
     if(this->_currentSample == this->_samples){
-        emit test_finished(this->_currentTest+1);
+        emit test_finished();
         QString res = this->_adb->getLogResult();
         emit test_results_available(res);
         this->_adb->clearDeviceLog();
-        this->_currentTest++;
         this->_currentSample = 0;
         this->_testing = false;
         emit testing_status_changed(_testing);
@@ -86,15 +92,6 @@ void TestManager::test_step()
         }
 
     }
-
-    // test is over
-    if(this->_currentTest > this->_tests){
-        this->_currentSample = 0;
-        this->_currentTest = 0;
-    }
-
-
-
 
 }
 

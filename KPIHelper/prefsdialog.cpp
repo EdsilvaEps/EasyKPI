@@ -20,14 +20,12 @@ PrefsDialog::~PrefsDialog()
 void PrefsDialog::saveSettings()
 {
 
-    int tests = ui->testsAmount->text().toInt();
     int samples = ui->samplesAmount->text().toInt();
     double interval = ui->intervalTime->text().toDouble();
     double bufferIncrease = ui->bufferExpansion->text().toDouble() ;
 
     QSettings settings("IPE", "KPIHelper");
     settings.beginGroup("settings");
-    settings.setValue("tests", tests);
     settings.setValue("samples", samples);
     settings.setValue("interval", interval);
     settings.setValue("bufferIncrease", bufferIncrease);
@@ -42,15 +40,12 @@ void PrefsDialog::loadSettings()
 {
     QSettings settings("IPE", "KPIHelper");
     settings.beginGroup("settings");
-    int tests = settings.value("tests", QVariant(0)).toInt();
     int samples = settings.value("samples", QVariant(0)).toInt();
     double interval = settings.value("interval", QVariant(0)).toDouble();
     double bufferIncrease =  settings.value("bufferIncrease", QVariant(0)).toDouble();
     adbPath = settings.value("adbPath", QVariant("")).toString();
-
     settings.endGroup();
 
-    ui->testsAmount->setValue(tests);
     ui->samplesAmount->setValue(samples);
     ui->intervalTime->setValue(interval);
     ui->bufferExpansion->setValue(bufferIncrease);

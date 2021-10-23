@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->timer = new QTimer(this);
 
     adb = new AdbManager("~/Android/Sdk/platform-tools/adb");
-    testMan = new TestManager(0,0,4000,adb);
+    testMan = new TestManager();
 
     //getting terminal font settings
     QSettings settings("IPE", "KPIHelper");
@@ -55,9 +55,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     adb->getConnectedDevices();
     ui->stopTestBtn->setEnabled(false);
-    //ui->terminalOutput->append(deviceLog);
+    updateUI();
 
-    //ui->startTestBtn->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -89,12 +88,11 @@ void MainWindow::on_browseFilesBtn_clicked()
 
 void MainWindow::on_startTestBtn_clicked()
 {
-    int tests = ui->testNumberBox->value();
     int samples = ui->sampleNumberBox->value();
     int delay = ui->delayTime->value();
 
-    if(tests <= 0 || samples <= 0 || delay <= 0){
-        printOnScreen("choose a valid amount of tests/samples and/or a valid interval time.");
+    if(samples <= 0 || delay <= 0){
+        printOnScreen("choose a valid amount of samples and/or a valid interval time.");
         return;
     }
 
@@ -103,12 +101,10 @@ void MainWindow::on_startTestBtn_clicked()
         return;
     }
 
-    testMan->setTests(tests);
     testMan->setSamples(samples);
     testMan->setDelay(delay);
 
-    printOnScreen("starting test with " + QString::number(tests) + " tests and " +
-                  QString::number(samples) + " samples...");
+    printOnScreen("starting test with " + QString::number(samples) + " samples...");
 
     this->countdownAcc = 3;
     timer->start(1000);
@@ -124,10 +120,10 @@ void MainWindow::on_stopTestBtn_clicked()
 
 }
 
-void MainWindow::on_test_finished(int test)
+void MainWindow::on_test_finished()
 {
     qDebug() << "test finished: ";
-    this->printOnScreen("test " + QString::number(test) + " finished.");
+    this->printOnScreen("test finished.");
 }
 
 void MainWindow::on_test_failed(QString why)
@@ -136,10 +132,9 @@ void MainWindow::on_test_failed(QString why)
 
 }
 
-void MainWindow::on_test_step(int tests, int samples)
+void MainWindow::on_test_step(int samples)
 {
-    ui->terminalOutput->append("collecting sample " + QString::number(samples) +
-                               " of test " + QString::number(tests));
+    ui->terminalOutput->append("collecting sample " + QString::number(samples));
 
 }
 
@@ -161,6 +156,18 @@ void MainWindow::countdown()
 void MainWindow::printOnScreen(QString text)
 {
     ui->terminalOutput->append(text);
+}
+
+void MainWindow::updateUI()
+{
+    QSettings settings("IPE", "KPIHelper");
+    settings.beginGroup("settings");
+    int samples = settings.value("samples", QVariant(0)).toInt();
+    double interval = settings.value("interval", QVariant(0)).toDouble();
+    settings.endGroup();
+
+    ui->delayTime->setValue(interval);
+    ui->sampleNumberBox->setValue(samples);
 }
 
 void MainWindow::on_device_found(QString device)
@@ -271,14 +278,13 @@ int MainWindow::openFileDialog()
 }
 
 
-
-
-
-
-
 void MainWindow::on_action_setup_triggered()
 {
     PrefsDialog * dialog = new PrefsDialog(this);
+
+    connect(dialog, &PrefsDialog::accepted, [=](){
+        updateUI();
+    });
 
     dialog->exec();
 

@@ -16,14 +16,15 @@ class TestManager : public QObject
     Q_OBJECT
 
 public:
-    TestManager(int tests=0, int samples=0, int delay=0, AdbManager* adb=NULL);
+    //TestManager(int samples=0, int delay=0, AdbManager* adb=NULL);
+    TestManager();
     // getters and setters for test variables
-    void setTests(int tests);
+    //void setTests(int tests);
     void setSamples(int samples);
     void setDelay(int delay);
     // start a KPI test either with arguments or with previously set variables
     void startTest();
-    void startTest(int tests, int samples, int delay);
+    void startTest(int samples, int delay);
 
     const QString &saveDir() const;
     void setSaveDir(const QString &newSaveDir);
@@ -31,8 +32,8 @@ public:
     void saveTest(QString testData); // function for saving test data to file.
 
 signals:
-    void step_finished(int tests, int samples); // reported when a sample has been collected
-    void test_finished(int test); // reported when a test has finished
+    void step_finished(int samples); // reported when a sample has been collected
+    void test_finished(); // reported when a test has finished
     void test_failed(QString why); // reported when something happened halfway through the test
     void start_collect(const QString &device, const int &logCount, const int &duration);
     void test_results_available(const QString &res);
@@ -46,11 +47,10 @@ signals:
     void handleLogResults(const QString &);
 
  private:
-    int _tests;
     int _samples;
     int _delay;
-    int _currentTest;
     int _currentSample;
+    double _bufferIncrease;
     bool _testing = false;
     QString _saveDir;
     AdbManager* _adb;

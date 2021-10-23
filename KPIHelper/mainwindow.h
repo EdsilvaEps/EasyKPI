@@ -26,9 +26,9 @@ private slots:
 
     void on_stopTestBtn_clicked();
 
-    void on_test_finished(int test);
+    void on_test_finished();
 
-    void on_test_step(int tests, int samples);
+    void on_test_step(int samples);
 
     void on_test_failed(QString why);
 
@@ -63,6 +63,8 @@ private:
     void countdown();
 
     void printOnScreen(QString text);
+
+    void updateUI(); // update test variables on screen
 
     int openFileDialog();
 };
