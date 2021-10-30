@@ -20,9 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     this->setWindowTitle("KPI Helper");
     this->timer = new QTimer(this);
 
-    adb = new AdbManager("~/Android/Sdk/platform-tools/adb");
-    testMan = new TestManager();
-
     //getting terminal font settings
     QSettings settings("IPE", "KPIHelper");
     settings.beginGroup("settings");
@@ -34,9 +31,21 @@ MainWindow::MainWindow(QWidget *parent)
         this->terminalFont.setItalic(settings.value("terminalFont.italic", QVariant(false)).toBool());
         ui->terminalOutput->setFont(terminalFont);
     }
+    QString adbpath = settings.value("adbPath", QVariant("")).toString();
     settings.endGroup();
 
+    if(adbpath.isEmpty()){
+        QString msg = "The path to the Android Debug Bridge(ADB) is not yet set, would you like to set it now?";
+        int ret = QMessageBox::question(this, "Warning", msg,
+                                                       QMessageBox::Ok | QMessageBox::Cancel);
 
+        if(ret == QMessageBox::Ok) openSetupMenu();
+        else QCoreApplication::quit();
+
+    }
+
+    adb = new AdbManager("~/Android/Sdk/platform-tools/adb");
+    testMan = new TestManager(adb);
 
     // connecting testMans signals to widget slots
     connect(testMan, &TestManager::step_finished, this, &MainWindow::on_test_step);
@@ -104,7 +113,7 @@ void MainWindow::on_startTestBtn_clicked()
     testMan->setSamples(samples);
     testMan->setDelay(delay);
 
-    printOnScreen("starting test with " + QString::number(samples) + " samples...");
+    printOnScreen("starting test with " + QString::number(samples) + " samples on device " + adb->getSelectedDevice());
 
     this->countdownAcc = 3;
     timer->start(1000);
@@ -146,7 +155,12 @@ void MainWindow::countdown()
     if(this->countdownAcc == 0){
 
         this->timer->stop();
-        this->testMan->startTest();
+        try{
+            this->testMan->startTest();
+        } catch(logic_error &ex){
+            qDebug() << "error on startTest() - " << ex.what();
+        }
+
         this->countdownAcc = 3;
     }
 
@@ -277,8 +291,7 @@ int MainWindow::openFileDialog()
     return 0;
 }
 
-
-void MainWindow::on_action_setup_triggered()
+void MainWindow::openSetupMenu()
 {
     PrefsDialog * dialog = new PrefsDialog(this);
 
@@ -288,6 +301,12 @@ void MainWindow::on_action_setup_triggered()
 
     dialog->exec();
 
+}
+
+
+void MainWindow::on_action_setup_triggered()
+{
+    openSetupMenu();
 }
 
 

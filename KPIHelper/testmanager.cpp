@@ -1,21 +1,19 @@
 #include "testmanager.h"
 #include "qsettings.h"
 
-TestManager::TestManager()
+TestManager::TestManager(AdbManager *adb)
 {
     QSettings settings("IPE", "KPIHelper");
     settings.beginGroup("settings");
     int samples = settings.value("samples", QVariant(0)).toInt();
     double interval = settings.value("interval", QVariant(0)).toDouble();
     double bufferIncrease =  settings.value("bufferIncrease", QVariant(0)).toDouble();
-    QString adbPath = settings.value("adbPath", QVariant("")).toString();
-
     settings.endGroup();
 
     this->_samples = samples;
     this->_delay = interval;
     this->_bufferIncrease = bufferIncrease;
-    this->_adb = new AdbManager(adbPath);
+    this->_adb = adb;
     this->_currentSample = 0;
 
 }

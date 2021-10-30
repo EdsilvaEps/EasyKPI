@@ -17,7 +17,7 @@ class TestManager : public QObject
 
 public:
     //TestManager(int samples=0, int delay=0, AdbManager* adb=NULL);
-    TestManager();
+    TestManager(AdbManager *adb=NULL);
     // getters and setters for test variables
     //void setTests(int tests);
     void setSamples(int samples);

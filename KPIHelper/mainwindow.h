@@ -67,5 +67,7 @@ private:
     void updateUI(); // update test variables on screen
 
     int openFileDialog();
+
+    void openSetupMenu();
 };
 #endif // MAINWINDOW_H
