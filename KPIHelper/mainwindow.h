@@ -52,6 +52,8 @@ private slots:
 
     void on_actionTerminal_text_triggered(); // opens a dialog for changing terminal text font
 
+    void on_terminal_message(const QString &message); // prints a message on the terminal screen
+
 private:
     Ui::MainWindow *ui;
     AdbManager *adb;

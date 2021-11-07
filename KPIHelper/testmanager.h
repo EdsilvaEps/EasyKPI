@@ -41,10 +41,12 @@ signals:
     void test_saved(); // reported when test is successfully saved
     void no_save_path(QString testData); // reported when there's no save path - send testdata so user can decide what to do with it
     void error(const QString &err); // reported when an error is caught
+    void terminal_message(const QString &msg); // reported when a regular message needs to be printed on terminal screen
 
  private slots:
     void test_step(); //this triggers a snapshot using the AdbManager obj
     void handleLogResults(const QString &);
+    void finish_test(); // invoked to wrap up and finish/save test data
 
  private:
     int _samples;

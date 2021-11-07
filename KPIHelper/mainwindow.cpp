@@ -55,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(testMan, &TestManager::testing_status_changed, this, &MainWindow::on_testing_status_changed);
     connect(testMan, &TestManager::no_save_path, this, &MainWindow::on_save_path_missing);
     connect(testMan, &TestManager::error, this, &MainWindow::on_error);
+    connect(testMan, &TestManager::terminal_message, this, &MainWindow::on_terminal_message);
 
     // connecting adbManager signals to widget slots
     connect(adb, &AdbManager::foundDevice, this, &MainWindow::on_device_found);
@@ -331,5 +332,10 @@ void MainWindow::on_actionTerminal_text_triggered()
     } else{
         QMessageBox::information(this, "Message", "User did not choose a font");
     }
+}
+
+void MainWindow::on_terminal_message(const QString &msg)
+{
+    printOnScreen(msg);
 }
 

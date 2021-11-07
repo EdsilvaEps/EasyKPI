@@ -48,6 +48,8 @@ void TestManager::startTest(){
             timer += this->_delay;
 
         }
+        timer += 500; // half a second interval after test is over
+        QTimer::singleShot(timer, this, SLOT(finish_test()));
 
 
     } catch(exception &ex){
@@ -74,21 +76,26 @@ void TestManager::test_step()
     emit step_finished(++this->_currentSample);
 
     if(this->_currentSample == this->_samples){
-        emit test_finished();
-        QString res = this->_adb->getLogResult();
-        emit test_results_available(res);
-        this->_adb->clearDeviceLog();
-        this->_currentSample = 0;
-        this->_testing = false;
-        emit testing_status_changed(_testing);
+        emit terminal_message("Processing data....");
+    }
 
-        try {
-            saveTest(res);
-        }  catch (runtime_error &e) {
-            QString ex = e.what();
-            emit error(ex);
-        }
+}
 
+void TestManager::finish_test()
+{
+    emit test_finished();
+    QString res = this->_adb->getLogResult();
+    emit test_results_available(res);
+    this->_adb->clearDeviceLog();
+    this->_currentSample = 0;
+    this->_testing = false;
+    emit testing_status_changed(_testing);
+
+    try {
+        saveTest(res);
+    }  catch (runtime_error &e) {
+        QString ex = e.what();
+        emit error(ex);
     }
 
 }
@@ -98,6 +105,7 @@ void TestManager::handleLogResults(const QString &res)
     qDebug() << res;
     emit test_results_available(res);
 }
+
 
 void TestManager::saveTest(QString testData)
 {
