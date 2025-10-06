@@ -1,6 +1,8 @@
 # EasyKPI
 QT application in C++ to automate KPI analysis tests through an easy-to-use interface.
 
+## Instructions:
+
 1 - select the device from the dropdown list of connected
 android devices
 
